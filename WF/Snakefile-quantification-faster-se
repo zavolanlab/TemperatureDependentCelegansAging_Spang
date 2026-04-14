@@ -1,0 +1,74 @@
+import os
+import pandas as pd
+import shutil
+import yaml
+from shlex import quote
+from typing import Tuple
+from snakemake.utils import validate
+
+####
+# This is the second part of a large workflow, which assumes that bam files were created and indexed, and technical replicates were merged
+####
+
+## Preparations
+localrules:  finish, separate_BED_pas_into_chromosomes
+
+# Get sample table
+samples = pd.read_csv(
+    config["samples_file"],
+    header=0,
+    index_col=None,
+    comment='#',
+    engine='python',
+    sep="\t")
+
+samples.index = samples['sample']
+
+rule finish:
+    input:
+        ### Gene expression is quantified with FeatureCounts - with customly prepared exonic segments and with standard annotation from Ensembl
+        standard_gene_counts = expand(os.path.join(config['output_dir'], 
+                                    "gene_expression_quantification", \
+                                    config["organism"],
+                                    "FeatureCounts_standard",
+                                    "{merged_sample}.standard.txt"),
+                                     merged_sample = list(samples['merged_sample'].unique())),
+
+# ##############################################################################
+# ### Gene counts using FeatureCounts
+# ##############################################################################
+
+rule FeatureCounts_standard:
+    """
+    perform standard gene expression quantification using provided .gtf file
+    assume unstanded data
+    """
+    input:
+        bam=os.path.join(
+                        config["output_dir"],
+                        "map_genome_merged",
+                        "{merged_sample}.merged.sorted.bam"),
+        gtf = config['gtf_file'],
+    params:
+        outdir = os.path.join(config['output_dir'], 
+                              "gene_expression_quantification", 
+                              config["organism"],"FeatureCounts_standard"),
+    output:
+        out_gene_fragments_txt = os.path.join(config['output_dir'], 
+                                              "gene_expression_quantification", 
+                                              config["organism"],
+                                              "FeatureCounts_standard",
+                                              "{merged_sample}.standard.txt"),
+    conda:
+        "envs/FeatureCounts.yaml"
+    threads:8
+    resources:
+        mem_mb=10000,
+        runtime=60,
+    log:
+        os.path.join(config["local_log"],"FeatureCounts_standard_{merged_sample}.log")
+    shell:
+        """(set +o pipefail; mkdir -p {params.outdir}; \
+        featureCounts -O \
+        --fraction -Q 255 -s 0 -d 1 -D 10000000000000 -T {threads} -t exon -g gene_id \
+        -a {input.gtf} -o {output.out_gene_fragments_txt} {input.bam}) &> {log}"""

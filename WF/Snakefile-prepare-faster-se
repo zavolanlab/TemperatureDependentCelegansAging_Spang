@@ -46,18 +46,18 @@ rule finish:
         ##
         # make genomic alignment with STAR and merge technical replicates
         ## 
-        # genomic_alignment_bam=expand(os.path.join(
-        #                 config["output_dir"],
-        #                 "map_genome_merged",
-        #                 "{merged_sample}.merged.sorted.bam"),
-        # merged_sample = list(samples['merged_sample'].unique())), 
+        genomic_alignment_bam=expand(os.path.join(
+                        config["output_dir"],
+                        "map_genome_merged",
+                        "{merged_sample}.merged.sorted.bam"),
+        merged_sample = list(samples['merged_sample'].unique())), 
         
         ### diagnostic stats on read mapping
-        # mapping_stats=expand(os.path.join(
-        #     config["output_dir"],
-        #     "mapping_stats",
-        #     "{sample}.mapping_stats.txt"),
-        # sample = list(samples.index.values)),
+        mapping_stats=expand(os.path.join(
+            config["output_dir"],
+            "mapping_stats",
+            "{sample}.mapping_stats.txt"),
+        sample = list(samples.index.values)),
 
 rule index_genome:
     """
@@ -407,16 +407,13 @@ rule count_UM_MM_Total_reads:
     input:
         bam_genome=os.path.join(
             config["output_dir"],
-            "samples",
-            "{sample}",
             "map_genome",
-            "{sample}.Aligned.sortedByCoord.out.bam",
+            "{sample}.Aligned.sortedByCoord.out.no_secondary.bam",
         ),
         input_reads=os.path.join(
             config["output_dir"],
-            "samples",
-            "{sample}",
             "fastq",
+            "1.trimmed_adapters",
             "{sample}.R1.fastq.gz"),
     output:
         mapping_stats=os.path.join(

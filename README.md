@@ -18,7 +18,8 @@ Currently, we're analyzing the bulk RNA-seq data from C.elegans kept under two c
 ├── TemperatureDependentCelegansAging_Spang.current.ipynb                  # a Jupyter notebook dedicated to the project, includes analysis and workflow configuration
 ├── TemperatureDependentCelegansAging_Spang.template.env       # Template for required environment variables/paths
 └── WF/                                 # Snakemake Workflow Engine
-    ├── Snakefile-prepare-faster-se        # Pipeline for RNA-seq data processing (alignment, FastQC) optimized for single-end reads prepared with Takara SMART-Seq mRNA LP kit
+    ├── Snakefile-prepare-faster-se     # 1st step of the Pipeline: RNA-seq data processing (alignment, FastQC) optimized for single-end reads prepared with Takara SMART-Seq mRNA LP kit
+    ├── Snakefile-quantification-faster # 2nd step of the Pipeline: quantification of gene expression
     ├── config.template.yaml            # Template configuration for Snakemake parameters
     ├── envs/                           # Conda environments isolated for specific Snakemake rules
     ├── profile/                        # SLURM execution profile for the HPC
@@ -64,7 +65,7 @@ nbstripout --install
 This will automatically hide the output of cells in juputer notebooks when pushed to github! Otherwise there is a risk of exposing your HPC cluster paths to public.
 
 ### 5. Use the juputer notebook to configure the workflow and input table preparation
-Configuration of the workflows (i.e. creation of input .tsv with sample specification and .yaml config is done **inside** the jupyter notebook)
+Configuration of the workflows (i.e. creation of input .tsv with sample specification and .yaml config is done **inside** the [jupyter notebook](TemperatureDependentCelegansAging_Spang.current.ipynb))
 
 ### 6. Executing the Workflows
 
